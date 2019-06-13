@@ -24,7 +24,14 @@
       }
     },
     created () {
-      this.openAction && this.mergeColumns()
+    },
+    watch: {
+      openAction: {
+        handler (c) {
+          c ? this.mergeColumns() : this.resetColumns()
+        },
+        immediate: true
+      }
     },
     methods: {
       mergeColumns () {
@@ -35,6 +42,13 @@
         const merge = this.getActions()
         columns.push(merge)
         this.$attrs.columns = columns
+      },
+      resetColumns () {
+        const { columns } = this.$attrs
+        if (columns && columns[columns.length - 1].name === 'action') {
+          columns.pop()
+          this.$attrs.columns = columns
+        }
       },
       getActions () {
         const action = { ...this.action }
