@@ -1,70 +1,69 @@
 <template>
-  <Table style="margin-top: 10px;" :columns="columns" :data="tableData"></Table>
+  <Table v-bind="$attrs" v-on="$listeners"></Table>
 </template>
 
 <script type="text/jsx">
+  import styles from './table-runder.module.less'
   export default {
     name: 'TableRender',
     props: {
-      tableTitle: {
-        type: Array,
-        default: () => []
+      openAction: { // 是否开启操作列
+        type: Boolean,
+        default: true
       },
-      tableData: {
-        type: Array,
-        default: () => []
-      },
-      actions: {
-        type: Function,
-        default: (self) => {
+      action: { // 操作列附带的基础配置
+        type: Object,
+        default: () => {
           return {
             title: '操作',
-            render: (h, params) => {
-              return (
-                <div style="display:flex; flexDirection: row;justifyContent: center; alignItems:center;">
-                  <i-button type="success" size="small" nativeOnClick={self.viewHandle.bind(self, params)}>查看</i-button>
-                  <i-button style="marginLeft: 5px;" nativeOnClick={self.editorHandle.bind(self, params)} type="primary"
-                            size="small">编辑
-                  </i-button>
-                  <i-button style="marginLeft: 5px;" nativeOnClick={self.removeHandle.bind(self, params)} type="error"
-                            size="small">删除
-                  </i-button>
-                </div>
-              )
-            }
+            fixed: 'right',
+            align: 'center',
+            name: 'action'
           }
         }
       }
     },
-    data () {
-      return {
-        columns: [],
-        acts: {}
-      }
-    },
-    watch: {
-      tableTitle: {
-        handler (n, o) {
-          if (n) {
-            this.initTableTitle(n)
-          }
-        },
-        immediate: true
-      }
+    created () {
+      this.openAction && this.mergeColumns()
     },
     methods: {
-      viewHandle (params) {
-        this.$emit('view-item', params)
+      mergeColumns () {
+        const { columns } = this.$attrs
+        if (columns && columns[columns.length - 1].name === 'action') {
+          return
+        }
+        const merge = this.getActions()
+        columns.push(merge)
+        this.$attrs.columns = columns
       },
-      initTableTitle (list) {
-        let cache = JSON.parse(JSON.stringify(list))
-        let act = this.actions(this)
-        cache.push(act)
-        this.columns = cache
+      getActions () {
+        const action = { ...this.action }
+        let self = this
+        return {
+          ...action,
+          render (h, params) {
+            return (
+              <div class={styles['table-btn']}>
+                <i-button type="success" size="small" nativeOnClick={self.viewHandle.bind(self, params)}>查看</i-button>
+                <i-button nativeOnClick={self.editorHandle.bind(self, params)} type="primary"
+                          size="small">编辑
+                </i-button>
+                <i-button nativeOnClick={self.removeHandle.bind(self, params)} type="error"
+                          size="small">删除
+                </i-button>
+              </div>
+            )
+          }
+        }
+      },
+      viewHandle (params) {
+        this.$emit('on-view', params)
       },
       editorHandle (params) {
+        this.$emit('on-editor', params)
       },
       removeHandle (params) {
+        this.$emit('on-remove', params)
       }
     }
   }

@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <h2>tableRender</h2>
-    <TableRender @view-item="viewHandle" :tableTitle="tableTitle" :tableData="testList"></TableRender>
+    <TableRender :columns="tableTitle" :data="testList" @on-view="viewHandle"></TableRender>
   </div>
 </template>
 
@@ -41,7 +41,9 @@
     },
     methods: {
       viewHandle (params) {
-        console.log(params)
+        this.$Modal.info({
+          content: JSON.stringify(params, null, '\t ')
+        })
       }
     }
   }
